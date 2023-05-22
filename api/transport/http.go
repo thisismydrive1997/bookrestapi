@@ -5,6 +5,7 @@ import (
 	"example/restfulapi/api/endpoint"
 	"example/restfulapi/models"
 	"example/restfulapi/repository"
+	"fmt"
 	"net/http"
 
 	"encoding/json"
@@ -47,6 +48,8 @@ func NewBookHttpHandler(b repository.BookRepo) http.Handler {
 		decodeDeleteBookByIdRequest,
 		encodeResponse,
 	))
+
+	router.Use(middleware)
 
 	return router
 }
@@ -103,4 +106,12 @@ func encodeResponse(ctx context.Context, w http.ResponseWriter, response interfa
 	}
 	w.Header().Add("Content-Type", "application/json")
 	return json.NewEncoder(w).Encode(response)
+}
+
+func middleware(originalHandler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("Running before handler")
+		originalHandler.ServeHTTP(w, r)
+		fmt.Println("Running after handler")
+	})
 }
